@@ -22,6 +22,7 @@ class DataEntry:
         self.graph = dgl.from_scipy(adj_matrix)
         self.features = torch.FloatTensor(features)
         self.graph.ndata['features'] = self.features
+        self.graph.edata['etype'] = torch.ones(self.graph.num_edges(), dtype=torch.int32)
 
 
 class DataSet:
