@@ -55,7 +55,7 @@ class DataSet:
                 label = entry['label']
                 if self.args.emb_type == 'w2v':
                     embeddings = load_wv(self.args.w2v)
-                if self.args.tokenizer == 'nltk':
+                if self.args.tok == 'nltk':
                     tokens = nltk_tokenizer(code)
                 if self.args.build_method == 'ifc':
                     adj, features = ifc(tokens, embeddings, self.args)
