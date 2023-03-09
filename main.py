@@ -27,7 +27,7 @@ if __name__ == '__main__':
     parser.add_argument('--graph_embed_size', type=int, help='Size of the Graph Embedding', default=200)
     parser.add_argument('--num_steps', type=int, help='Number of steps in GGNN', default=6)
     parser.add_argument('--batch_size', type=int, help='Batch Size for training', default=32)
-    parser.add_argument('--read_out', type=str, help='GNN readout function', default=32, choices=['sum', 'mean'], default='sum')
+    parser.add_argument('--read_out', type=str, help='GNN readout function', choices=['sum', 'mean'], default='sum')
     parser.add_argument('--emb_type', type=str, help='Embedding method for node feature generation. Wor2Vec or Transformer-based', choices=['w2v', 'hf'], default='w2v')
     parser.add_argument('--w2v', type=str, help='Pretrained Word2Vec model path, when w2v is selected as an embedding method.')
     parser.add_argument('--tok', type=str, help='Tokenization method of the src code.', choices=['ntlk', 'hf'], default='ntlk')
