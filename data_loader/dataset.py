@@ -6,6 +6,7 @@ import os
 
 import torch
 from dgl import DGLGraph
+import dgl
 from tqdm import tqdm
 from utils.graph_construction import utc, ifc
 from utils.init_features import load_wv, nltk_tokenizer
@@ -51,7 +52,7 @@ class DataSet:
         with open(self.args.data_src) as fp:
             _data = list(csv.DictReader(fp, delimiter=','))[1:] # Skip header
             for entry in tqdm(_data):
-                code = read_file(entry['file_path'])
+                code = read_file(entry['file'])
                 label = entry['label']
                 if self.args.emb_type == 'w2v':
                     embeddings = load_wv(self.args.w2v)
