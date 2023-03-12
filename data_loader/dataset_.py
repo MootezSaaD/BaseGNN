@@ -34,7 +34,7 @@ class PlaseDectDataset(DGLDataset):
                  save_dir=None,
                  force_reload=False,
                  verbose=False):
-        
+        self.args = args
         self.labels = df['label'].tolist()
         self.graphs = df['file'].tolist()
         self.split_name = df['split'].iloc[0]
