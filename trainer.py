@@ -104,7 +104,7 @@ def train(model, train_set, val_set, batch_size, max_steps, dev_every, loss_func
         # torch_geometric.loader.DataLoader concatenates all the graphs in the batch
         # into one big disjoint graph, so we can train with a batch as if it's a single graph.
         model.train()
-        pbar = tqdm.tqdm(total=len(train_set))
+        pbar = tqdm(total=len(train_set))
         for j, batch_data in enumerate(train_loader):
             pbar.set_postfix({"epoch": i, "batch": j})
             batch, label = batch_data
