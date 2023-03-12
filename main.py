@@ -5,7 +5,7 @@ import sys
 
 import numpy as np
 import torch
-from torch.nn import BCELoss
+from torch.nn import BCEWithLogitsLoss
 from torch.optim import Adam
 
 from data_loader.dataset import DataSet
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     debug('#' * 100)
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     model.cuda()
-    loss_function = BCELoss(reduction='sum')
+    loss_function = BCEWithLogitsLoss(reduction='sum')
     optim = Adam(model.parameters(), lr=0.0001, weight_decay=0.001)
     train(model=model, train_set=train_split, val_set=val_split, batch_size=args.batch_size, max_steps=1000000, dev_every=128,
           loss_function=loss_function, optimizer=optim,

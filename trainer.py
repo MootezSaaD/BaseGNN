@@ -108,7 +108,7 @@ def train(model, train_set, val_set, batch_size, max_steps, dev_every, loss_func
         for j, batch_data in enumerate(train_loader):
             pbar.set_postfix({"epoch": i, "batch": j})
             batch, label = batch_data
-            label = label.float().to(device)
+            label = label.float().unsqueeze(1).to(device) # go from size([batch_size]) to size([batch_size, 1])
             batch = batch.to(device)
             optimizer.zero_grad()
             out = model(batch)
