@@ -12,6 +12,8 @@ from data_loader.dataset import DataSet
 from modules.model import GGNN
 from trainer import train
 from utils.utils import tally_param, debug
+from utils.data import static_splitter
+from data_loader.dataset_ import PlaseDectDataset
 
 
 if __name__ == '__main__':
@@ -44,20 +46,21 @@ if __name__ == '__main__':
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)
 
-    dataset = DataSet(args)
+    train_split, test_split, val_split =  static_splitter(args.data_src)
 
-    assert args.feature_size == dataset.feature_size, \
-        'Dataset contains different feature vector than argument feature size. ' \
-        'Either change the feature vector size in argument, or provide different dataset.'
+    train_split = PlaseDectDataset(train_split, args)
+    test_split = PlaseDectDataset(test_split, args)
+    val_split = PlaseDectDataset(val_split, args)
 
-    model = GGNN(input_dim=dataset.feature_size, output_dim=args.graph_embed_size,
-                        num_steps=args.num_steps, max_edge_types=dataset.max_edge_type, read_out=args.read_out)
+    model = GGNN(input_dim=args.feature_size, output_dim=args.graph_embed_size,
+                        num_steps=args.num_steps, max_edge_types=train_split.max_etypes, read_out=args.read_out)
 
     debug('Total Parameters : %d' % tally_param(model))
     debug('#' * 100)
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     model.cuda()
     loss_function = BCELoss(reduction='sum')
     optim = Adam(model.parameters(), lr=0.0001, weight_decay=0.001)
-    train(model=model, dataset=dataset, max_steps=1000000, dev_every=128,
+    train(model=model, train_set=train_split, val_set=val_split, batch_size=args.batch_size, max_steps=1000000, dev_every=128,
           loss_function=loss_function, optimizer=optim,
-          save_path=model_dir + '/GGNN', max_patience=50, log_every=None)
+          save_path=model_dir + '/GGNN', max_patience=50, log_every=None, device=device)
