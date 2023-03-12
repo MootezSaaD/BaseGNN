@@ -63,4 +63,4 @@ if __name__ == '__main__':
     optim = Adam(model.parameters(), lr=0.0001, weight_decay=0.001)
     train(model=model, train_set=train_split, val_set=val_split, batch_size=args.batch_size, max_steps=1000000, dev_every=128,
           loss_function=loss_function, optimizer=optim,
-          save_path=model_dir + '/GGNN', max_patience=50, log_every=None, device=device)
+          save_path=model_dir + '/GGNN', max_patience=50, log_every=5, device=device)

@@ -71,9 +71,9 @@ def measure_performance(model, device, test_loader, test_set, loss_fn):
         for batch_data in test_loader:
             batch, label = batch_data
             batch = batch.to(device)
-            label = label.float().to(device)
+            label = label.float().unsqueeze(1)
             out = model(batch)
-            loss = loss_fn(out, label.view(-1))
+            loss = loss_fn(out, label)
             losses.append(loss.item() * len(out))
             pred = torch.gt(out, 0.5)
             correct = pred == label
