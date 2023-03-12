@@ -24,7 +24,7 @@ class GGNN(nn.Module):
 
         node_num = graph.number_of_nodes()
         zero_pad = torch.zeros(
-            [node_num, self.output_dim - self.input_dim],
+            [node_num, self.out_dim - self.inp_dim],
             dtype=torch.float,
             device=node_features.device,
         )
