@@ -2,6 +2,7 @@ import torch
 from dgl.nn import GatedGraphConv
 from torch import nn
 import torch.nn.functional as f
+import dgl
 
 class GGNN(nn.Module):
     def __init__(self, input_dim, output_dim, max_edge_types, read_out, num_steps=8):
@@ -16,13 +17,28 @@ class GGNN(nn.Module):
         self.classifier = nn.Linear(in_features=output_dim, out_features=1)
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, batch, cuda=False):
-        graph, features, edge_types = batch.get_network_inputs(cuda=cuda)
-        outputs = self.ggnn(graph, features, edge_types)
-        h_i, _ = batch.de_batchify_graphs(outputs)
+    def forward(self, graph, cuda=False):
+
+        node_features = graph.ndata['features']
+        edges = graph.edata['etype']
+
+        node_num = graph.number_of_nodes()
+        zero_pad = torch.zeros(
+            [node_num, self.out_feats - self.annotation_size],
+            dtype=torch.float,
+            device=node_features.device,
+        )
+        h1 = torch.cat([node_features, zero_pad], -1)
+        out = self.ggnn(graph, h1, edges)
+        out = torch.cat([out, node_features], -1)
+
+        graph.ndata['h'] = out
+
         if self.read_out == 'sum':
-            ggnn_ = self.classifier(h_i.sum(dim=1))
+            feats = dgl.sum_nodes(graph, 'h')
         if self.read_out == 'mean':
-            ggnn_ = self.classifier(h_i.mean(dim=1))
-        result = self.sigmoid(ggnn_).squeeze(dim=-1)
+            feats = dgl.mean_nodes(graph, 'h')
+
+        result = self.sigmoid(self.classifier(feats))
+        
         return result
