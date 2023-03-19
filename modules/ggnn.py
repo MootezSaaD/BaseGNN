@@ -12,9 +12,10 @@ class GGNN(nn.Module):
         self.out_dim = output_dim
         self.max_edge_types = max_edge_types
         self.num_timesteps = num_steps
-        self.ggnn = GatedGraphConv(in_feats=input_dim, out_feats=output_dim, n_steps=num_steps,
+        self.ggcn1 = GatedGraphConv(in_feats=input_dim, out_feats=output_dim, n_steps=num_steps,
                                    n_etypes=max_edge_types)
         self.classifier = nn.Linear(in_features=output_dim, out_features=1)
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, graph, cuda=False):
 
@@ -28,7 +29,7 @@ class GGNN(nn.Module):
         )
         
         h1 = torch.cat([node_features, zero_pad], -1)
-        out = self.ggnn(graph, h1)
+        out = self.ggcn1(graph, h1)
         graph.ndata['h'] = out
         
         if self.read_out == 'sum':
@@ -36,6 +37,6 @@ class GGNN(nn.Module):
         if self.read_out == 'mean':
             feats = dgl.mean_nodes(graph, 'h')
 
-        result = self.classifier(feats)
+        result = self.sigmoid(self.classifier(feats))
         
         return result

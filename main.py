@@ -4,16 +4,19 @@ import pickle
 import sys
 
 import numpy as np
+from data_loader.lit_data import DataModule
 import torch
-from torch.nn import BCEWithLogitsLoss
+from torch.nn import BCELoss
 from torch.optim import Adam
+import pytorch_lightning as pl
 
 from data_loader.dataset import DataSet
-from modules.model import GGNN
+from modules.ggnn import GGNN
 from trainer import train
 from utils.utils import tally_param, debug
 from utils.data import static_splitter
-from data_loader.dataset_ import PlaseDectDataset
+from modules.lit_classifier import PlastDectClassifier
+from utils.init_features import load_wv
 
 
 if __name__ == '__main__':
@@ -48,19 +51,24 @@ if __name__ == '__main__':
 
     train_split, test_split, val_split =  static_splitter(args.data_src)
 
-    train_split = PlaseDectDataset(train_split, args)
-    test_split = PlaseDectDataset(test_split, args)
-    val_split = PlaseDectDataset(val_split, args)
+    # If we are using Word2Vec, load it just once
+    if args.emb_type == 'w2v':
+        args.w2v_model = load_wv(args.w2v)
+    
+    data_module = DataModule(args.data_src, args)
+    
 
-    model = GGNN(input_dim=args.feature_size, output_dim=args.graph_embed_size,
-                        num_steps=args.num_steps, max_edge_types=train_split.max_etypes, read_out=args.read_out)
-
-    debug('Total Parameters : %d' % tally_param(model))
-    debug('#' * 100)
-    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    model.cuda()
-    loss_function = BCEWithLogitsLoss(reduction='sum')
-    optim = Adam(model.parameters(), lr=0.0001, weight_decay=0.001)
-    train(model=model, train_set=train_split, val_set=val_split, batch_size=args.batch_size, max_steps=1000000, dev_every=128,
-          loss_function=loss_function, optimizer=optim,
-          save_path=model_dir + '/GGNN', max_patience=50, log_every=5, device=device)
+    graph_model = GGNN(input_dim=args.feature_size, output_dim=args.graph_embed_size,
+                        num_steps=args.num_steps, max_edge_types=args.max_etypes, read_out=args.read_out)
+    
+    loss_function = torch.nn.BCELoss(reduction='sum')
+    model = PlastDectClassifier(graph_model, loss_function)
+    early_stopping_cb = pl.callbacks.early_stopping.EarlyStopping(monitor="val_f1", mode="max", patience=5)
+    trainer = pl.Trainer(
+        accelerator='gpu',
+        devices=[0],
+        progress_bar_refresh_rate=20,
+        max_epochs=100,
+        callbacks=[early_stopping_cb]
+    )
+    

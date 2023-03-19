@@ -41,9 +41,9 @@ class PlaseDectDataset(DGLDataset):
         debug(f"Number of {self.split_name} instances: {len(self.labels)}")
         self.emb_type = args.emb_type
         if self.emb_type == 'w2v':
-            self.embeddings = load_wv(self.args.w2v)
+            self.embeddings = args.w2v_model
         self.build_method = args.build_method
-        super(PlaseDectDataset, self).__init__(name='plasdect',
+        super(PlaseDectDataset, self).__init__(name=f'plasdect_{self.split_name}',
                                            url=url,
                                            raw_dir=raw_dir,
                                            save_dir=save_dir,
