@@ -38,11 +38,11 @@ class PlastDectClassifier(pl.LightningModule):
         logits = self.graph_model(g)
         y = y.float().unsqueeze(1)
         loss = self.loss_func(logits, y)
-        preds = torch.argmax(logits, dim=1)
-        preds = preds.float().unsqueeze(1)
-        self.acc.update(preds, y)
-        self.f1.update(preds, y)
-        self.mcc.update(preds, y)
+        preds = logits.round().float()
+        # Accumulate Accuracy, F1 and MCC (Training)
+        self.acc(preds, y)
+        self.f1(preds, y)
+        self.mcc(preds, y)
 
         return loss
     
@@ -51,11 +51,11 @@ class PlastDectClassifier(pl.LightningModule):
         logits = self.graph_model(g)
         y = y.float().unsqueeze(1)
         loss = self.loss_func(logits, y)
-        preds = torch.argmax(logits, dim=1)
-        preds = preds.float().unsqueeze(1)
-        self.acc_val.update(preds, y)
-        self.f1_val.update(preds, y)
-        self.mcc_val.update(preds, y)
+        preds = logits.round().float()
+        # Accumulate Accuracy, F1 and MCC (Validation)
+        val_acc = self.acc_val(preds, y)
+        val_f1 = self.f1_val(preds, y)
+        val_mcc = self.mcc_val(preds, y)
 
         return loss
     
@@ -76,23 +76,37 @@ class PlastDectClassifier(pl.LightningModule):
 
         return loss
     
-    def on_train_epoch_end(self, outs):
-        self.log('train_acc', self.acc)
-        self.log('train_f1', self.f1)
-        self.log('train_mcc', self.mcc)
-        # Reset
+    def on_train_epoch_end(self):
+        # Compute metrics
+        t_acc = self.acc.compute()
+        t_f1 = self.f1.compute()
+        t_mcc = self.mcc.compute()
+        self.log('train_acc', t_acc)
+        self.log('train_f1', t_f1)
+        self.log('train_mcc', t_mcc)
+        
         self.acc.reset()
         self.f1.reset()
         self.mcc.reset()
+        print(f"\nTraining accuracy: {t_acc}, "\
+    f"f1: {t_f1}, mcc: {t_mcc}")
+
         
-    def on_validation_epoch_end(self, outs):
-        self.log('val_acc', self.acc_val)
-        self.log('val_f1', self.f1_val)
-        self.log('val_mcc', self.mcc_val)
-        # Reset
+    def on_validation_epoch_end(self):
+        v_acc =  self.acc_val.compute()
+        v_f1 = self.f1_val.compute()
+        v_mcc = self.mcc_val.compute()
+        self.log('val_acc',v_acc)
+        self.log('val_f1', v_f1)
+        self.log('val_mcc', v_mcc)
+        
         self.acc_val.reset()
         self.f1_val.reset()
         self.mcc_val.reset()
+        
+        print(f"\nValidation accuracy: {v_acc}, "\
+    f"f1: {v_f1}, mcc: {v_mcc}")
+        
 
     def configure_optimizers(self):
         optimizer = Adam(self.parameters(), lr=1e-3, weight_decay=1e-2)
