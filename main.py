@@ -54,7 +54,7 @@ if __name__ == '__main__':
     
 
     graph_model = GGNN(input_dim=args.feature_size, output_dim=args.graph_embed_size,
-                        num_steps=args.num_steps, max_edge_types=args.max_etypes, read_out=args.read_out)
+                        num_steps=args.num_steps, max_edge_types=1, read_out=args.read_out)
     
     loss_function = torch.nn.BCELoss(reduction='sum')
     model = PlastDectClassifier(graph_model, loss_function)
