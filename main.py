@@ -62,7 +62,6 @@ if __name__ == '__main__':
     trainer = pl.Trainer(
         accelerator='gpu',
         devices=[0],
-        progress_bar_refresh_rate=20,
         max_epochs=100,
         callbacks=[early_stopping_cb]
     )
