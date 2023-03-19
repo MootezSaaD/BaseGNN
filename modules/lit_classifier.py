@@ -85,7 +85,7 @@ class PlastDectClassifier(pl.LightningModule):
         self.f1.reset()
         self.mcc.reset()
         
-    def on_train_epoch_end(self, outs):
+    def on_validation_epoch_end(self, outs):
         self.log('val_acc', self.acc_val)
         self.log('val_f1', self.f1_val)
         self.log('val_mcc', self.mcc_val)
