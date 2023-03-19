@@ -1,5 +1,5 @@
 import torch
-import lightning.pytorch as pl
+import pytorch_lightning as pl
 from torch.optim import Adam
 import torchmetrics
 
