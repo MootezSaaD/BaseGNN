@@ -1,8 +1,7 @@
 from data_loader.dataset_ import PlaseDectDataset
-import lightning.pytorch as pl
+import pytorch_lightning as pl
 from utils.data import static_splitter
 import dgl
-import multiprocessing
 
 class DataModule(pl.LightningDataModule):
     def __init__(self, data_dir, args, num_workers = 4 , batch_size = 32):
