@@ -12,7 +12,7 @@ class PlastDectClassifier(pl.LightningModule):
         #### loss function
         self.loss_func = loss_func
         #### Metrics
-        self.acc = torchmetrics.Accuracy()
+        self.acc = torchmetrics.Accuracy(task='binary')
         self.f1 = torchmetrics.F1Score(task='binary')
         self.mcc = torchmetrics.MatthewsCorrCoef(task='binary')
         #### Optimizer params
