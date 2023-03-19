@@ -5,7 +5,7 @@ def static_splitter(src):
     col_name = 'split'
     splits = []
 
-    for split in {'train', 'val', 'eval'}:
+    for split in ['train', 'eval', 'val']:
         splits.append(_filter_by_col(_df, col_name, split))
 
     return splits
