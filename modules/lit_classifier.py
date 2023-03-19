@@ -28,9 +28,9 @@ class PlastDectClassifier(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         g, y = batch
         logits = self.graph_model(g)
+        y = y.unsqueeze(1)
         loss = self.loss_func(logits, y)
         preds = torch.argmax(logits, dim=1)
-        preds = preds.float().unsqueeze(1)
         acc = self.acc(preds, y)
         f1 = self.f1(preds, y)
         mcc = self.mcc(preds, y)
@@ -44,9 +44,9 @@ class PlastDectClassifier(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         g, y = batch
         logits = self.graph_model(g)
+        y = y.unsqueeze(1)
         loss = self.loss_func(logits, y)
         preds = torch.argmax(logits, dim=1)
-        preds = preds.float().unsqueeze(1)
         acc = self.acc(preds, y)
         f1 = self.f1(preds, y)
         mcc = self.mcc(preds, y)
@@ -60,9 +60,9 @@ class PlastDectClassifier(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         g, y = batch
         logits = self.graph_model(g)
+        y = y.unsqueeze(1)
         loss = self.loss_func(logits, y)
         preds = torch.argmax(logits, dim=1)
-        preds = preds.float().unsqueeze(1)
         acc = self.acc(preds, y)
         f1 = self.f1(preds, y)
         mcc = self.mcc(preds, y)
