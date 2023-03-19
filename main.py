@@ -65,4 +65,5 @@ if __name__ == '__main__':
         max_epochs=100,
         callbacks=[early_stopping_cb]
     )
-    
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(model)
