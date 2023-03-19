@@ -1,19 +1,14 @@
 import argparse
 import os
-import pickle
 import sys
 
 import numpy as np
 from data_loader.lit_data import DataModule
 import torch
 from torch.nn import BCELoss
-from torch.optim import Adam
 import pytorch_lightning as pl
 
-from data_loader.dataset import DataSet
 from modules.ggnn import GGNN
-from trainer import train
-from utils.utils import tally_param, debug
 from utils.data import static_splitter
 from modules.lit_classifier import PlastDectClassifier
 from utils.init_features import load_wv
