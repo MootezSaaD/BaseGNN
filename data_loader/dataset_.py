@@ -38,7 +38,7 @@ class PlaseDectDataset(DGLDataset):
         self.labels = df['label'].tolist()
         self.graphs = df['file'].tolist()
         self.split_name = df['split'].iloc[0]
-        debug(f"Number of {self.split_name} instances: {len(self.labels)}")
+        print(f"Number of {self.split_name} instances: {len(self.labels)}")
         self.emb_type = args.emb_type
         if self.emb_type == 'w2v':
             self.embeddings = args.w2v_model

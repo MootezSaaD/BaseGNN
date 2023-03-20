@@ -15,6 +15,7 @@ class GGNN(nn.Module):
         self.ggcn1 = GatedGraphConv(in_feats=input_dim, out_feats=output_dim, n_steps=num_steps,
                                    n_etypes=max_edge_types)
         self.classifier = nn.Linear(in_features=output_dim, out_features=1)
+        self.dropout = nn.Dropout(.2)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, graph, cuda=False):
@@ -29,7 +30,8 @@ class GGNN(nn.Module):
         )
         
         h1 = torch.cat([node_features, zero_pad], -1)
-        out = self.ggcn1(graph, h1)
+        out = f.leaky_relu(self.ggcn1(graph, h1))
+        out = self.dropout(out)
         graph.ndata['h'] = out
         
         if self.read_out == 'sum':

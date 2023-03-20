@@ -13,6 +13,8 @@ from utils.data import static_splitter
 from modules.lit_classifier import PlastDectClassifier
 from utils.init_features import load_wv
 
+import timeit
+
 
 if __name__ == '__main__':
     torch.manual_seed(1000)
@@ -58,12 +60,15 @@ if __name__ == '__main__':
     
     loss_function = torch.nn.BCELoss(reduction='sum')
     model = PlastDectClassifier(graph_model, loss_function)
-    early_stopping_cb = pl.callbacks.early_stopping.EarlyStopping(monitor="val_f1", mode="max", patience=5)
+    early_stopping_cb = pl.callbacks.early_stopping.EarlyStopping(monitor="val_f1", mode="max", patience=15)
     trainer = pl.Trainer(
         accelerator='gpu',
         devices=[0],
-        max_epochs=100,
+        max_epochs=250,
         callbacks=[early_stopping_cb]
     )
+    start = timeit.default_timer()
     trainer.fit(model, datamodule=data_module)
-    trainer.test(model)
+    stop = timeit.default_timer()
+    print(f'Training time: {stop - start}')
+    trainer.test(model, datamodule=data_module)

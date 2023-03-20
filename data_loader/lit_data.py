@@ -20,7 +20,6 @@ class DataModule(pl.LightningDataModule):
         self.train_split,
         batch_size=self.batch_size,
         num_workers=self.num_workers,
-        pin_memory=True,
         shuffle=True
     )
 
@@ -29,7 +28,6 @@ class DataModule(pl.LightningDataModule):
         self.val_split,
         batch_size=self.batch_size,
         num_workers=self.num_workers,
-        pin_memory=True,
         shuffle=False
     )
 
@@ -38,6 +36,5 @@ class DataModule(pl.LightningDataModule):
         self.test_split,
         batch_size=self.batch_size,
         num_workers=self.num_workers,
-        pin_memory=True,
         shuffle=False
     )
