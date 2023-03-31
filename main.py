@@ -14,7 +14,7 @@ from modules.lit_classifier import PlastDectClassifier
 from utils.init_features import load_wv
 
 import timeit
-
+os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 
 if __name__ == '__main__':
     torch.manual_seed(1000)
@@ -25,10 +25,11 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', type=str, required=True, help='Name of the dataset for experiment.')
 
     parser.add_argument('--data_src', type=str, help='CSV file of the dataset.', required=True)
+    parser.add_argument('--epochs', type=int, help='Number of epochs.', required=True)
     parser.add_argument('--feature_size', type=int, help='Size of feature vector for each node', default=128)
     parser.add_argument('--graph_embed_size', type=int, help='Size of the Graph Embedding', default=200)
     parser.add_argument('--num_steps', type=int, help='Number of steps in GGNN', default=6)
-    parser.add_argument('--batch_size', type=int, help='Batch Size for training', default=32)
+    parser.add_argument('--batch_size', type=int, help='Batch Size for training', required=True)
     parser.add_argument('--read_out', type=str, help='GNN readout function', choices=['sum', 'mean'], default='sum')
     parser.add_argument('--emb_type', type=str, help='Embedding method for node feature generation. Wor2Vec or Transformer-based', choices=['w2v', 'hf'], default='w2v')
     parser.add_argument('--w2v', type=str, help='Pretrained Word2Vec model path, when w2v is selected as an embedding method.')
@@ -58,14 +59,14 @@ if __name__ == '__main__':
     graph_model = GGNN(input_dim=args.feature_size, output_dim=args.graph_embed_size,
                         num_steps=args.num_steps, max_edge_types=1, read_out=args.read_out)
     
-    loss_function = torch.nn.BCELoss(reduction='sum')
+    loss_function = torch.nn.CrossEntropyLoss(reduction='mean')
     model = PlastDectClassifier(graph_model, loss_function)
-    early_stopping_cb = pl.callbacks.early_stopping.EarlyStopping(monitor="val_f1", mode="max", patience=15)
+    early_stopping_cb = pl.callbacks.early_stopping.EarlyStopping(monitor="val_mcc", mode="max", patience=15)
     trainer = pl.Trainer(
         accelerator='gpu',
         devices=[0],
-        max_epochs=250,
-        callbacks=[early_stopping_cb]
+        max_epochs=args.epochs,
+        
     )
     start = timeit.default_timer()
     trainer.fit(model, datamodule=data_module)

@@ -38,7 +38,7 @@ class PlastDectClassifier(pl.LightningModule):
         logits = self.graph_model(g)
         y = y.float().unsqueeze(1)
         loss = self.loss_func(logits, y)
-        preds = logits.round().float()
+        preds = torch.argmax(logits, dim=1)
         # Accumulate Accuracy, F1 and MCC (Training)
         self.log('train_loss', loss, on_epoch=True)
         self.acc(preds, y)
@@ -52,7 +52,7 @@ class PlastDectClassifier(pl.LightningModule):
         logits = self.graph_model(g)
         y = y.float().unsqueeze(1)
         loss = self.loss_func(logits, y)
-        preds = logits.round().float()
+        preds = torch.argmax(logits, dim=1)
         # Accumulate Accuracy, F1 and MCC (Validation)
         self.log('val_loss', loss, on_epoch=True)
         val_acc = self.acc_val(preds, y)
@@ -66,7 +66,7 @@ class PlastDectClassifier(pl.LightningModule):
         logits = self.graph_model(g)
         y = y.float().unsqueeze(1)
         loss = self.loss_func(logits, y)
-        preds = logits.round().float()
+        preds = torch.argmax(logits, dim=1)
         acc = self.acc_test(preds, y)
         f1 = self.f1_test(preds, y)
         mcc = self.mcc_test(preds, y)
@@ -110,5 +110,5 @@ class PlastDectClassifier(pl.LightningModule):
         
 
     def configure_optimizers(self):
-        optimizer = Adam(self.parameters(), lr=1e-3, weight_decay=1e-2)
+        optimizer = Adam(self.parameters(), lr=1e-3, weight_decay=5e-4)
         return optimizer
