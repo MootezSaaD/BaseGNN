@@ -2,6 +2,7 @@ import torch
 import pytorch_lightning as pl
 from torch.optim import Adam
 import torchmetrics
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class PlastDectClassifier(pl.LightningModule):
     def __init__(self, graph_model, loss_func, lr=1e-3, weight_decay=1e-2):
@@ -34,42 +35,45 @@ class PlastDectClassifier(pl.LightningModule):
         return x
 
     def training_step(self, batch, batch_idx):
-        g, y = batch
+        g, labels = batch
         logits = self.graph_model(g)
-        y = y.float().unsqueeze(1)
-        loss = self.loss_func(logits, y)
+        labels = labels.type(torch.LongTensor)
+        labels = labels.to(device)
+        loss = self.loss_func(logits, labels)
         preds = torch.argmax(logits, dim=1)
         # Accumulate Accuracy, F1 and MCC (Training)
         self.log('train_loss', loss, on_epoch=True)
-        self.acc(preds, y)
-        self.f1(preds, y)
-        self.mcc(preds, y)
+        self.acc(preds, labels)
+        self.f1(preds, labels)
+        self.mcc(preds, labels)
 
         return loss
     
     def validation_step(self, batch, batch_idx):
-        g, y = batch
+        g, labels = batch
         logits = self.graph_model(g)
-        y = y.float().unsqueeze(1)
-        loss = self.loss_func(logits, y)
+        labels = labels.type(torch.LongTensor)
+        labels = labels.to(device)
+        loss = self.loss_func(logits, labels)
         preds = torch.argmax(logits, dim=1)
         # Accumulate Accuracy, F1 and MCC (Validation)
         self.log('val_loss', loss, on_epoch=True)
-        val_acc = self.acc_val(preds, y)
-        val_f1 = self.f1_val(preds, y)
-        val_mcc = self.mcc_val(preds, y)
+        val_acc = self.acc_val(preds, labels)
+        val_f1 = self.f1_val(preds, labels)
+        val_mcc = self.mcc_val(preds, labels)
 
         return loss
     
     def test_step(self, batch, batch_idx):
-        g, y = batch
+        g, labels = batch
         logits = self.graph_model(g)
-        y = y.float().unsqueeze(1)
-        loss = self.loss_func(logits, y)
+        labels = labels.type(torch.LongTensor)
+        labels = labels.to(device)
+        loss = self.loss_func(logits, labels)
         preds = torch.argmax(logits, dim=1)
-        acc = self.acc_test(preds, y)
-        f1 = self.f1_test(preds, y)
-        mcc = self.mcc_test(preds, y)
+        acc = self.acc_test(preds, labels)
+        f1 = self.f1_test(preds, labels)
+        mcc = self.mcc_test(preds, labels)
         self.log('test_loss', loss,  on_epoch=True, logger=True)
         self.log('test_acc', acc,  on_epoch=True, logger=True)
         self.log('test_f1', f1,  on_epoch=True, logger=True)
@@ -112,3 +116,4 @@ class PlastDectClassifier(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = Adam(self.parameters(), lr=1e-3, weight_decay=5e-4)
         return optimizer
+
