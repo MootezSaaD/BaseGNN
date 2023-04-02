@@ -7,6 +7,8 @@ from data_loader.lit_data import DataModule
 import torch
 from torch.nn import BCELoss
 import pytorch_lightning as pl
+from lightning.pytorch import loggers as pl_loggers
+
 
 from modules.ggnn import GGNN
 from utils.data import static_splitter
@@ -59,6 +61,9 @@ if __name__ == '__main__':
     graph_model = GGNN(input_dim=args.feature_size, output_dim=args.graph_embed_size,
                         num_steps=args.num_steps, max_edge_types=1, read_out=args.read_out)
     
+
+    tb_logger = pl_loggers.TensorBoardLogger(version=args.dataset)
+    
     loss_function = torch.nn.CrossEntropyLoss(reduction='mean')
     model = PlastDectClassifier(graph_model, loss_function)
     early_stopping_cb = pl.callbacks.early_stopping.EarlyStopping(monitor="val_mcc", mode="max", patience=15)
@@ -66,6 +71,7 @@ if __name__ == '__main__':
         accelerator='gpu',
         devices=[0],
         max_epochs=args.epochs,
+        logger=tb_logger
         
     )
     start = timeit.default_timer()
